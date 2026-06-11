@@ -1,0 +1,82 @@
+/* PartidosPage.module.css */
+.page { padding-block: var(--space-8); display: flex; flex-direction: column; gap: var(--space-6); }
+
+.header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--space-4); flex-wrap: wrap;
+}
+.title    { font-size: var(--text-3xl); font-weight: var(--font-extrabold); }
+.subtitle { color: var(--text-secondary); margin-top: var(--space-1); }
+
+/* ── Grupo selector ── */
+.grupoSelector { display: flex; flex-direction: column; gap: var(--space-1); }
+.grupoLabel { font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.grupoSelect {
+  background: var(--bg-surface-2); border: 1px solid var(--border-default);
+  border-radius: var(--radius-md); color: var(--text-primary);
+  font-size: var(--text-sm); font-weight: var(--font-medium);
+  padding: var(--space-2) var(--space-3); cursor: pointer;
+  outline: none;
+}
+.grupoSelect:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(0, 87, 184, 0.1); }
+
+.grupoSingle {
+  display: flex; align-items: center; gap: var(--space-2);
+  background: rgba(0, 87, 184, 0.06); border: 1px solid rgba(0, 87, 184, 0.2);
+  border-radius: var(--radius-full); padding: var(--space-2) var(--space-4);
+  color: var(--color-primary); font-size: var(--text-sm); font-weight: var(--font-medium);
+}
+
+.noGrupo {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-sm); color: var(--color-warning);
+  background: hsla(38,92%,50%,0.1); border: 1px solid hsla(38,92%,50%,0.25);
+  border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+}
+.noGrupo a { color: var(--color-primary); font-weight: var(--font-semibold); }
+
+/* ── Fase tabs ── */
+.faseTabs {
+  display: flex; gap: var(--space-1); flex-wrap: wrap;
+  background: var(--bg-surface); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); padding: var(--space-1);
+}
+.faseTab {
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-md);
+  background: transparent; border: none; cursor: pointer;
+  font-size: var(--text-sm); font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  transition: background var(--duration-fast), color var(--duration-fast);
+  white-space: nowrap;
+}
+.faseTab:hover { background: var(--bg-surface-2); color: var(--text-primary); }
+.faseTabActive { background: var(--color-primary) !important; color: #fff !important; }
+
+/* ── Grupos section ── */
+.grupos { display: flex; flex-direction: column; gap: var(--space-8); }
+
+.grupoSection { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.grupoTitle {
+  font-size: var(--text-lg); font-weight: var(--font-bold);
+  color: var(--text-secondary); border-left: 3px solid var(--color-primary);
+  padding-left: var(--space-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+.noPartidos, .emptyPartidos {
+  text-align: center; color: var(--text-muted);
+  padding-block: var(--space-12);
+}
+
+@media (max-width: 640px) {
+  .header    { flex-direction: column; }
+  .faseTabs  { gap: 4px; }
+  .faseTab   { padding: var(--space-2) var(--space-3); font-size: var(--text-xs); }
+  .grid      { grid-template-columns: 1fr; }
+}

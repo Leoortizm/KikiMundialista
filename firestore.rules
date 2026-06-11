@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isGrupoMember(grupoId) {
+      return isAuth() &&
+        request.auth.uid in get(/databases/$(database)/documents/grupos/$(grupoId)).data.miembros;
+    }
+
+    function isGrupoAdmin(grupoId) {
+      return isAuth() &&
+        get(/databases/$(database)/documents/grupos/$(grupoId)).data.adminUid == request.auth.uid;
+    }
+
+    function matchIsOpen(partidoId) {
+      let partido = get(/databases/$(database)/documents/partidos/$(partidoId)).data;
+      return partido.estado == 'programado' && request.time < partido.fechaHora;
+    }
+
+    // ── Users ──────────────────────────────────────────────
+    match /users/{uid} {
+      allow read:   if isAuth();
+      allow create: if isOwner(uid);
+
+      // SECURITY: Owner puede actualizar su perfil pero NUNCA cambiar role, uid ni createdAt.
+      // Cualquier autenticado puede actualizar SOLO gruposIds (necesario para flujo de aceptar solicitud de grupo).
+      // Solo admin global puede cambiar cualquier campo.
+      allow update: if isAdmin() ||
+                       (isOwner(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid', 'createdAt'])) ||
+                       (isAuth() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['gruposIds']));
+      allow delete: if isAdmin();
+    }
+
+    // ── Grupos ─────────────────────────────────────────────
+    match /grupos/{grupoId} {
+      // Cualquier usuario autenticado puede leer grupos.
+      // Necesario para que joinGrupoByCodigo pueda buscar por codigoInvitacion
+      // antes de que el usuario sea miembro.
+      allow read:   if isAuth();
+      allow create: if isAuth();
+
+      // SECURITY: Solo el admin del grupo o admin global puede hacer ediciones completas.
+      // Usuarios autenticados solo pueden modificar miembros y solicitudesPendientes (join/leave).
+      allow update: if isGrupoAdmin(grupoId) || isAdmin() ||
+                       (isAuth() && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['miembros', 'solicitudesPendientes']));
+
+      allow delete: if isGrupoAdmin(grupoId) || isAdmin();
+
+      // ── Predicciones (subcolección) ─────────────────────
+      match /predicciones/{predId} {
+        allow read:   if isGrupoMember(grupoId) || isAdmin();
+
+        // SECURITY: uid DEBE ser el del usuario actual, validar que goles sean enteros >= 0.
+        allow create: if isGrupoMember(grupoId) &&
+                         matchIsOpen(request.resource.data.partidoId) &&
+                         request.resource.data.uid == request.auth.uid &&
+                         request.resource.data.golesLocal is int &&
+                         request.resource.data.golesLocal >= 0 &&
+                         request.resource.data.golesLocal <= 99 &&
+                         request.resource.data.golesVisitante is int &&
+                         request.resource.data.golesVisitante >= 0 &&
+                         request.resource.data.golesVisitante <= 99;
+
+        // SECURITY: Dueño puede actualizar pero NO cambiar uid ni partidoId.
+        // Validar rango de goles en actualizaciones también.
+        allow update: if isAdmin() ||
+                         (isOwner(resource.data.uid) &&
+                          matchIsOpen(resource.data.partidoId) &&
+                          request.resource.data.uid == resource.data.uid &&
+                          request.resource.data.partidoId == resource.data.partidoId &&
+                          request.resource.data.golesLocal is int &&
+                          request.resource.data.golesLocal >= 0 &&
+                          request.resource.data.golesLocal <= 99 &&
+                          request.resource.data.golesVisitante is int &&
+                          request.resource.data.golesVisitante >= 0 &&
+                          request.resource.data.golesVisitante <= 99);
+
+        allow delete: if isGrupoAdmin(grupoId) || isAdmin();
+      }
+    }
+
+    // ── Partidos ───────────────────────────────────────────
+    match /partidos/{partidoId} {
+      allow read:   if true;               // Público
+      allow write:  if isAdmin();          // Solo admin global
+    }
+
+    // ── Leaderboards ───────────────────────────────────────
+    match /leaderboards/{grupoId}/entries/{uid} {
+      allow read:   if isGrupoMember(grupoId) || isAdmin();
+      allow write:  if isGrupoAdmin(grupoId) || isAdmin();
+    }
+
+    // ── Config ─────────────────────────────────────────────
+    match /config/{docId} {
+      allow read:  if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // ── Deny-all catch-all ─────────────────────────────────
+    // Firestore deniega por defecto, pero ser explícito es mejor práctica.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

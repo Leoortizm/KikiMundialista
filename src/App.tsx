@@ -1,0 +1,14 @@
+// src/App.tsx
+// Punto de entrada de la aplicación: providers y router
+
+import { RouterProvider } from 'react-router-dom';
+import { AuthProvider } from './features/auth/AuthContext';
+import { router } from './router';
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
+}

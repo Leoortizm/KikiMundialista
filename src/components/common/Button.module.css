@@ -1,0 +1,135 @@
+/* Button.module.css */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── Tamaños ── */
+.sm  { height: 36px; padding: 0 var(--space-4); font-size: var(--text-sm); }
+.md  { height: 44px; padding: 0 var(--space-5); font-size: var(--text-base); }
+.lg  { height: 52px; padding: 0 var(--space-6); font-size: var(--text-lg); border-radius: var(--radius-lg); }
+
+/* ── Variantes ── */
+.primary {
+  background: var(--color-primary);
+  color: #fff;
+  border: 1px solid var(--color-primary-dark);
+}
+.primary:hover:not(:disabled) {
+  background: #004b9b;
+  border-color: #003670;
+}
+.primary:active:not(:disabled) {
+  background: #003670;
+}
+
+.secondary {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+}
+.secondary:hover:not(:disabled) {
+  background: var(--bg-surface-3);
+  border-color: var(--text-primary);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+.ghost:hover:not(:disabled) {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+.danger {
+  background: var(--color-danger);
+  color: #fff;
+  border: 1px solid #bf1722;
+}
+.danger:hover:not(:disabled) {
+  background: #bf1722;
+  border-color: #9c121b;
+}
+
+.success {
+  background: var(--color-success);
+  color: #fff;
+  border: 1px solid #00873a;
+}
+.success:hover:not(:disabled) {
+  background: #00873a;
+  border-color: #007030;
+}
+.success:active:not(:disabled) {
+  background: #007030;
+}
+
+.google {
+  background: #fff;
+  color: #1f1f1f;
+  border: 1px solid #dadce0;
+  font-weight: var(--font-medium);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+.google:hover:not(:disabled) {
+  background: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* ── Estado deshabilitado / loading ── */
+.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── Full width ── */
+.fullWidth { width: 100%; }
+
+/* ── Íconos ── */
+.icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.label { flex: 1; text-align: center; }
+
+/* ── Spinner inline ── */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btnSpin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes btnSpin { to { transform: rotate(360deg); } }
+
+/* ── Ripple effect ── */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+.btn:active::after { opacity: 1; }

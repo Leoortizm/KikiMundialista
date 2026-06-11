@@ -1,0 +1,103 @@
+/* ============================================================
+   KikiMundialista — Design Tokens
+   Mundial 2026 / Dark-first / Premium
+   ============================================================ */
+
+:root {
+  /* ── Paleta principal (Estilo Trionda Mundial 2026) ── */
+  --color-primary:        #0057B8;   /* Solar/Royal Blue */
+  --color-primary-light:  #338CE8;
+  --color-primary-dark:   #003F8A;
+
+  --color-gold:           hsl(43, 96%, 56%);    /* Oro / acierto exacto */
+  --color-gold-light:     hsl(43, 96%, 72%);
+
+  --color-success:        #009D43;   /* Flash/Average Green */
+  --color-warning:        hsl(38, 92%, 50%);
+  --color-danger:         #E31D2B;   /* Power/Hi-Res Red */
+
+  /* ── Superficies (Estilo Claro / Blanco Hueso) ── */
+  --bg-base:              #F6F6F2;              /* Fondo blanco hueso raíz */
+  --bg-surface:           #FFFFFF;              /* Fondo de tarjetas y contenedores */
+  --bg-surface-2:         #EBEBE6;              /* Superficies elevadas sutiles */
+  --bg-surface-3:         #E5E5DF;              /* Inputs, estados hover */
+  --bg-overlay:           rgba(28, 28, 26, 0.4);
+
+  /* ── Texto ── */
+  --text-primary:         #1C1C1A;              /* Gris carbón muy oscuro para legibilidad */
+  --text-secondary:       #4D4D47;              /* Gris medio para textos secundarios */
+  --text-muted:           #7B7B75;              /* Gris claro para placeholders e info de soporte */
+  --text-inverse:         #FFFFFF;              /* Blanco para contrastar sobre fondos de color */
+
+  /* ── Bordes ── */
+  --border-subtle:        rgba(28, 28, 26, 0.06);
+  --border-default:       rgba(28, 28, 26, 0.12);
+  --border-strong:        rgba(28, 28, 26, 0.24);
+  --border-primary:       rgba(0, 87, 184, 0.25);
+
+  /* ── Tipografía ── */
+  --font-sans:            'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-display:         'Outfit', 'Inter', sans-serif;
+  --font-mono:            'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs:              0.75rem;    /* 12px */
+  --text-sm:              0.875rem;   /* 14px */
+  --text-base:            1rem;       /* 16px */
+  --text-lg:              1.125rem;   /* 18px */
+  --text-xl:              1.25rem;    /* 20px */
+  --text-2xl:             1.5rem;     /* 24px */
+  --text-3xl:             1.875rem;   /* 30px */
+  --text-4xl:             2.25rem;    /* 36px */
+
+  --font-normal:          400;
+  --font-medium:          500;
+  --font-semibold:        600;
+  --font-bold:            700;
+  --font-extrabold:       800;
+
+  /* ── Espaciado ── */
+  --space-1:   0.25rem;
+  --space-2:   0.5rem;
+  --space-3:   0.75rem;
+  --space-4:   1rem;
+  --space-5:   1.25rem;
+  --space-6:   1.5rem;
+  --space-8:   2rem;
+  --space-10:  2.5rem;
+  --space-12:  3rem;
+  --space-16:  4rem;
+  --space-20:  5rem;
+  --space-24:  6rem;
+
+  /* ── Bordes redondeados ── */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.625rem;
+  --radius-lg:   1rem;
+  --radius-xl:   1.5rem;
+  --radius-full: 9999px;
+
+  /* ── Sombras (Planas y Limpias) ── */
+  --shadow-sm:  0 1px 2px rgba(28, 28, 26, 0.05);
+  --shadow-md:  0 2px 6px rgba(28, 28, 26, 0.08);
+  --shadow-lg:  0 4px 12px rgba(28, 28, 26, 0.12);
+  --shadow-xl:  0 8px 24px rgba(28, 28, 26, 0.16);
+  --shadow-glow-primary:  none;
+  --shadow-glow-gold:     none;
+
+  /* ── Transiciones ── */
+  --duration-fast:    150ms;
+  --duration-normal:  250ms;
+  --duration-slow:    400ms;
+  --ease-out:         cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:      cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Estilo Plano (Antes Glassmorphism) ── */
+  --glass-bg:     #FFFFFF;
+  --glass-border: rgba(28, 28, 26, 0.12);
+  --glass-blur:   none;
+
+  /* ── Layout ── */
+  --sidebar-width:    260px;
+  --navbar-height:    64px;
+  --content-max-w:    1280px;
+}

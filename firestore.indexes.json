@@ -1,0 +1,45 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "partidos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fase",     "order": "ASCENDING" },
+        { "fieldPath": "fechaHora","order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "partidos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "estado",   "order": "ASCENDING" },
+        { "fieldPath": "fechaHora","order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "predicciones",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "uid",      "order": "ASCENDING" },
+        { "fieldPath": "partidoId","order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "predicciones",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "partidoId","order": "ASCENDING" },
+        { "fieldPath": "uid",      "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "entries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "puntosTotal","order": "DESCENDING" },
+        { "fieldPath": "uid",        "order": "ASCENDING"  }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

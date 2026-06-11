@@ -1,0 +1,280 @@
+/* ReglasPage.module.css */
+
+.page {
+  padding-block: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ── Hero Banner ── */
+.hero {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #003e8a 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-8);
+  color: #ffffff;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+
+.heroContent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.heroIconWrap {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  backdrop-filter: blur(4px);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-extrabold);
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 2px;
+}
+
+/* ── Section Cards ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-6);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.section:last-of-type {
+  border-bottom: none;
+}
+
+.sectionTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.introText {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Steps ── */
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-8);
+  margin-top: var(--space-2);
+}
+
+.stepCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  position: relative;
+  padding-right: var(--space-6);
+}
+
+.stepNumber {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  font-size: 2rem;
+  font-weight: var(--font-extrabold);
+  color: var(--color-primary);
+  opacity: 0.15;
+  line-height: 1;
+}
+
+.stepTitle {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.stepDesc {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ── Table ── */
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-2);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--text-sm);
+}
+
+.table th {
+  background: var(--bg-elevated);
+  padding: var(--space-3) var(--space-4);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.table td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.aciertoCell {
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+}
+
+.badgeExacto {
+  background: rgba(245, 176, 65, 0.1);
+  color: #B77C1E;
+  border: 1px solid rgba(245, 176, 65, 0.25);
+}
+
+.badgeGanador {
+  background: rgba(0, 157, 67, 0.08);
+  color: var(--color-success);
+  border: 1px solid rgba(0, 157, 67, 0.2);
+}
+
+.badgeFallo {
+  background: rgba(227, 29, 43, 0.06);
+  color: var(--color-danger);
+  border: 1px solid rgba(227, 29, 43, 0.15);
+}
+
+.puntosCell {
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+
+/* ── Eliminatorias ── */
+.elimInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.elimText {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.infoBox {
+  background: rgba(0, 87, 184, 0.03);
+  border-left: 4px solid var(--color-primary);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.infoBoxTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+}
+
+.infoList {
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1.4;
+}
+
+/* ── FAQ ── */
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.faqItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.faqQuestion {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.faqAnswer {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hero {
+    padding: var(--space-5) var(--space-6);
+  }
+  .title {
+    font-size: var(--text-xl);
+  }
+  .stepsGrid {
+    grid-template-columns: 1fr;
+  }
+}
