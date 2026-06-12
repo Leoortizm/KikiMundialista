@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Shield, Zap, Users } from 'lucide-react';
+import { getRedirectResult } from 'firebase/auth';
+import { auth } from '../services/firebase';
 import { loginWithGoogle, getAuthErrorMessage } from '../services/authService';
 import { Button } from '../components/common/Button';
 import { PageTransition } from '../components/layout/PageTransition';
@@ -20,6 +22,25 @@ export default function Login() {
 
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
+
+  useEffect(() => {
+    setLoading(true);
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          console.log('Autenticado vía redirección:', result.user.email);
+        }
+      })
+      .catch((err: unknown) => {
+        console.error('Error de redirección:', err);
+        const code = (err as { code?: string }).code ?? '';
+        const msg  = getAuthErrorMessage(code);
+        setError(msg || `Error de autenticación (${code})`);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   async function handleGoogleLogin() {
     setError('');
