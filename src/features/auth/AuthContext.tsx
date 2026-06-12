@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { onAuthStateChanged, type User } from 'firebase/auth';
+import { onAuthStateChanged, getRedirectResult, type User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db, COLLECTIONS } from '../../services/firebase';
 import { upsertUserProfile } from '../../services/usersService';
@@ -35,6 +35,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading]           = useState(true);
 
   useEffect(() => {
+    // Procesar resultado de la redirección (OAuth redirect flow)
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          console.log('Autenticación vía redirección exitosa para:', result.user.email);
+        }
+      })
+      .catch((err) => {
+        console.error('Error al procesar el resultado de la redirección:', err);
+      });
+
     // Listener 1: Auth state (login / logout)
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);

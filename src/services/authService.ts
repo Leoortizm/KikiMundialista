@@ -2,15 +2,14 @@
 // Operaciones de Firebase Authentication — Solo Google OAuth
 
 import {
-  signInWithPopup,
+  signInWithRedirect,
   signOut as firebaseSignOut,
-  type UserCredential,
 } from 'firebase/auth';
 import { auth, googleProvider } from './firebase';
 
-/** Login / Registro con Google (popup) — crea cuenta si no existe */
-export async function loginWithGoogle(): Promise<UserCredential> {
-  return signInWithPopup(auth, googleProvider);
+/** Login / Registro con Google (redirección) — crea cuenta si no existe */
+export async function loginWithGoogle(): Promise<void> {
+  return signInWithRedirect(auth, googleProvider);
 }
 
 /** Cerrar sesión */
