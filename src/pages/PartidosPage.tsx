@@ -1,6 +1,6 @@
 // src/pages/PartidosPage.tsx
 import { useState, useEffect, useCallback } from 'react';
-import { Users, AlertCircle } from 'lucide-react';
+import { Users, AlertCircle, Radio } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import { getPartidos } from '../services/partidosService';
@@ -203,6 +203,36 @@ export default function PartidosPage() {
         </div>
       ) : (
         <div className={styles.grupos}>
+
+          {/* ── Partidos EN VIVO (solo en tab "Todos") ── */}
+          {fase === 'todos' && (() => {
+            const enVivo = partidosFiltrados.filter((p) => p.estado === 'en_vivo');
+            if (enVivo.length === 0) return null;
+            return (
+              <section className={styles.liveSection}>
+                <div className={styles.liveSectionHeader}>
+                  <span className={styles.liveDot} />
+                  <Radio size={16} className={styles.liveIcon} />
+                  <h2 className={styles.liveSectionTitle}>En vivo ahora</h2>
+                  <span className={styles.liveCount}>{enVivo.length} {enVivo.length === 1 ? 'partido' : 'partidos'}</span>
+                </div>
+                <div className={styles.grid}>
+                  {enVivo.map((p) => (
+                    <PartidoCard
+                      key={p.id}
+                      partido={p}
+                      grupoId={grupoSelec}
+                      uid={uid}
+                      prediccion={predsMap.get(p.id)}
+                      onSaved={handleSaved}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })()}
+
+          {/* ── Resto de partidos agrupados ── */}
           {Object.entries(partidosAgrupados).map(([grupo, ps]) => (
             <section key={grupo} className={styles.grupoSection}>
               <h2 className={styles.grupoTitle}>{grupo}</h2>
