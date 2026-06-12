@@ -34,7 +34,6 @@ export default function AdminPage() {
   const [savingId,       setSavingId]       = useState<string | null>(null);
   const [successIds,     setSuccessIds]     = useState<Set<string>>(new Set());
   const [forms,          setForms]          = useState<Record<string, ResultForm>>({});
-  const [gruposIds,      setGruposIds]      = useState<string[]>([]);
   const [fasesHabilitadas, setFasesHabilitadas] = useState<FasePartido[]>(['grupos']);
 
   // Carga fases habilitadas al montar
@@ -101,13 +100,6 @@ export default function AdminPage() {
     return unsubscribe; // limpia el listener al desmontar
   }, []);
 
-  // ── Grupos: lectura única (solo para calcular puntos) ─────────────────
-  useEffect(() => {
-    getDocs(collection(db, COLLECTIONS.GRUPOS))
-      .then((s) => setGruposIds(s.docs.map((d) => d.id)))
-      .catch(() => setGruposIds([]));
-  }, []);
-
   function updateForm(id: string, field: keyof ResultForm, value: string) {
     setForms((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
   }
@@ -127,14 +119,18 @@ export default function AdminPage() {
       };
       await finalizarPartido(partido.id, resultado);
 
+      // Obtener la lista más reciente de grupos para no ignorar grupos nuevos
+      const gruposSnap = await getDocs(collection(db, COLLECTIONS.GRUPOS));
+      const latestGruposIds = gruposSnap.docs.map((d) => d.id);
+
       // 1. Calcula y persiste los puntos en cada predicción (retorna el Map)
       const prediccionesPorGrupo = await calcularPuntosParaTodosLosGrupos(
-        gruposIds, partido.id, resultado,
+        latestGruposIds, partido.id, resultado,
       );
 
       // 2. Actualiza el leaderboard de cada grupo con los nuevos puntos
       await actualizarLeaderboardParaTodosLosGrupos(
-        gruposIds, prediccionesPorGrupo, resultado,
+        latestGruposIds, prediccionesPorGrupo, resultado,
       );
 
       setSuccessIds((prev) => new Set([...prev, partido.id]));
