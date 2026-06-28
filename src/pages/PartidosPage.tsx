@@ -79,7 +79,7 @@ export default function PartidosPage() {
 
   useEffect(() => { loadPreds(); }, [loadPreds]);
 
-  function handleSaved(partidoId: string, data: { golesLocal: number; golesVisitante: number }) {
+  function handleSaved(partidoId: string, data: { golesLocal: number; golesVisitante: number; ganadorExtra?: 'local' | 'visitante' }) {
     setPredsMap((prev) => {
       const next = new Map(prev);
       const existing = prev.get(partidoId);
@@ -90,6 +90,7 @@ export default function PartidosPage() {
         uid,
         golesLocal:     data.golesLocal,
         golesVisitante: data.golesVisitante,
+        ganadorExtra:   data.ganadorExtra,
       } as Prediccion);
       return next;
     });
