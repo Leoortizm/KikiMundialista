@@ -41,11 +41,11 @@ export default function ReglasPage() {
         </div>
       </section>
 
-      {/* Sistema de Puntuación */}
+      {/* Sistema de Puntuación General */}
       <section className={`${styles.section} animate-slide-up`} style={{ animationDelay: '0.1s' }}>
-        <h2 className={styles.sectionTitle}><Target size={18} /> Sistema de Puntuación</h2>
+        <h2 className={styles.sectionTitle}><Target size={18} /> Sistema de Puntuación General</h2>
         <p className={styles.introText}>
-          Tus pronósticos se comparan con el resultado real del partido al finalizar. Los puntos se otorgan de la siguiente manera:
+          Tus pronósticos se comparan con el resultado real del partido al finalizar. Los puntos base se otorgan de la siguiente manera:
         </p>
 
         <div className={styles.tableWrap}>
@@ -88,20 +88,56 @@ export default function ReglasPage() {
         </div>
       </section>
 
-      {/* Reglas de Eliminatorias */}
+      {/* Reglas de Eliminatorias (Playoffs) */}
       <section className={`${styles.section} animate-slide-up`} style={{ animationDelay: '0.15s' }}>
-        <h2 className={styles.sectionTitle}><AlertTriangle size={18} /> Fase de Eliminatorias (Playoffs)</h2>
+        <h2 className={styles.sectionTitle}><AlertTriangle size={18} /> Fase de Eliminatorias (Playoffs y Ganador Extra)</h2>
         <div className={styles.elimInfo}>
           <p className={styles.elimText}>
-            A partir de los octavos de final, los partidos no pueden terminar en empate en la vida real. Si al término de los 90 minutos (y prórroga si aplica) el partido está empatado, el ganador se define mediante **tiros desde el punto penal**.
+            A partir de dieciseisavos de final, los partidos no pueden terminar en empate en la vida real. Si al término de los 90/120 minutos el marcador está empatado, el clasificado se define mediante penales. En estas fases aplica el selector de <strong>Ganador Extra</strong>.
           </p>
-          <div className={styles.infoBox}>
-            <h4 className={styles.infoBoxTitle}>¿Cómo pronosticar en estas fases?</h4>
-            <ul className={styles.infoList}>
-              <li>Ingresa los goles para los 90/120 minutos reglamentarios.</li>
-              <li>Si pones un marcador de empate (ej: 1-1), el sistema te permitirá seleccionar un <strong>"Ganador Extra"</strong> (el equipo que crees que pasará de ronda por penales).</li>
-              <li>Si el partido en la vida real va a penales y acertaste quién avanzó (coincidiendo con tu "Ganador Extra"), obtendrás <strong>1 punto</strong> por ganador correcto.</li>
-            </ul>
+
+          <div className={styles.tableWrap} style={{ marginTop: 'var(--space-4)' }}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Escenario (Playoffs)</th>
+                  <th>Ejemplo de Pronóstico vs Realidad</th>
+                  <th>Puntos</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className={styles.rowExacto}>
+                  <td><strong>Marcador exacto con ganador claro en 90 min</strong></td>
+                  <td>Predije 3-1 | Resultado 3-1</td>
+                  <td className={styles.puntosCell}><strong>3 pts</strong></td>
+                </tr>
+                <tr className={styles.rowExacto}>
+                  <td><strong>Marcador exacto de empate + Ganador Extra Acierto ✅</strong></td>
+                  <td>Predije 1-1 + "Avanza Local" | Resultado 1-1 (Gana Local en penales)</td>
+                  <td className={styles.puntosCell}><strong>3 pts</strong></td>
+                </tr>
+                <tr className={styles.rowGanador}>
+                  <td><strong>Marcador exacto de empate + Ganador Extra Fallo ❌</strong></td>
+                  <td>Predije 1-1 + "Avanza Visitante" | Resultado 1-1 (Gana Local en penales)</td>
+                  <td className={styles.puntosCell}><strong>1 pt</strong></td>
+                </tr>
+                <tr className={styles.rowGanador}>
+                  <td><strong>Acertar solo ganador/empate sin marcador exacto</strong></td>
+                  <td>Predije 2-0 | Resultado 3-1</td>
+                  <td className={styles.puntosCell}><strong>1 pt</strong></td>
+                </tr>
+                <tr className={styles.rowGanador}>
+                  <td><strong>Predijo empate sin acertar marcador + Ganador Extra Acierto</strong></td>
+                  <td>Predije 2-2 + "Avanza Local" | Resultado 1-1 (Gana Local en penales)</td>
+                  <td className={styles.puntosCell}><strong>1 pt</strong></td>
+                </tr>
+                <tr className={styles.rowFallo}>
+                  <td><strong>Fallo Total</strong></td>
+                  <td>No acertaste el resultado ni la tendencia</td>
+                  <td className={styles.puntosCell}><strong>0 pts</strong></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
