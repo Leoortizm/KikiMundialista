@@ -1,6 +1,6 @@
 // src/pages/PartidosPage.tsx
 import { useState, useEffect, useCallback } from 'react';
-import { Users, AlertCircle, Radio } from 'lucide-react';
+import { Users, AlertCircle, CalendarClock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import { getPartidos } from '../services/partidosService';
@@ -112,15 +112,32 @@ export default function PartidosPage() {
     return fasesHabilitadas.includes(f.key as FasePartido);
   });
 
-  // Agrupados por grupoFase (para fase de grupos) o por fecha
+  // En "todos": agrupar por fecha (orden cronológico). En otras fases: por grupo/fase.
+  const formatFechaKey = (ts: import('../types').Partido['fechaHora']) => {
+    const d = ts.toDate();
+    return d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+  };
+
   const partidosAgrupados: Record<string, Partido[]> = {};
   for (const p of partidosFiltrados) {
-    const key = fase === 'grupos' || fase === 'todos' && p.fase === 'grupos'
-      ? `Grupo ${p.grupoFase ?? '?'}`
-      : p.fase === 'grupos' ? `Grupo ${p.grupoFase}` : p.fase.charAt(0).toUpperCase() + p.fase.slice(1).replace('_', ' ');
+    let key: string;
+    if (fase === 'todos') {
+      key = formatFechaKey(p.fechaHora);
+    } else if (fase === 'grupos' || p.fase === 'grupos') {
+      key = `Grupo ${p.grupoFase ?? '?'}`;
+    } else {
+      key = p.fase.charAt(0).toUpperCase() + p.fase.slice(1).replace('_', ' ');
+    }
     if (!partidosAgrupados[key]) partidosAgrupados[key] = [];
     partidosAgrupados[key].push(p);
   }
+
+  // En "todos", ordenar las fechas cronológicamente
+  const entradasAgrupadas = fase === 'todos'
+    ? Object.entries(partidosAgrupados).sort(([, a], [, b]) =>
+        a[0].fechaHora.toMillis() - b[0].fechaHora.toMillis()
+      )
+    : Object.entries(partidosAgrupados);
 
   if (loading) {
     return (
@@ -204,20 +221,24 @@ export default function PartidosPage() {
       ) : (
         <div className={styles.grupos}>
 
-          {/* ── Partidos EN VIVO (solo en tab "Todos") ── */}
+          {/* ── Partidos de HOY (solo en tab "Todos") ── */}
           {fase === 'todos' && (() => {
-            const enVivo = partidosFiltrados.filter((p) => p.estado === 'en_vivo');
-            if (enVivo.length === 0) return null;
+            const hoy = new Date();
+            const hoyStr = `${hoy.getFullYear()}-${hoy.getMonth()}-${hoy.getDate()}`;
+            const deHoy = partidosFiltrados.filter((p) => {
+              const f = p.fechaHora.toDate();
+              return `${f.getFullYear()}-${f.getMonth()}-${f.getDate()}` === hoyStr;
+            });
+            if (deHoy.length === 0) return null;
             return (
-              <section className={styles.liveSection}>
-                <div className={styles.liveSectionHeader}>
-                  <span className={styles.liveDot} />
-                  <Radio size={16} className={styles.liveIcon} />
-                  <h2 className={styles.liveSectionTitle}>En vivo ahora</h2>
-                  <span className={styles.liveCount}>{enVivo.length} {enVivo.length === 1 ? 'partido' : 'partidos'}</span>
+              <section className={styles.todaySection}>
+                <div className={styles.todayHeader}>
+                  <CalendarClock size={16} className={styles.todayIcon} />
+                  <h2 className={styles.todayTitle}>Partidos de hoy</h2>
+                  <span className={styles.todayCount}>{deHoy.length} {deHoy.length === 1 ? 'partido' : 'partidos'}</span>
                 </div>
                 <div className={styles.grid}>
-                  {enVivo.map((p) => (
+                  {deHoy.map((p) => (
                     <PartidoCard
                       key={p.id}
                       partido={p}
@@ -233,9 +254,11 @@ export default function PartidosPage() {
           })()}
 
           {/* ── Resto de partidos agrupados ── */}
-          {Object.entries(partidosAgrupados).map(([grupo, ps]) => (
+          {entradasAgrupadas.map(([grupo, ps]) => (
             <section key={grupo} className={styles.grupoSection}>
-              <h2 className={styles.grupoTitle}>{grupo}</h2>
+              <h2 className={styles.grupoTitle}>
+                {grupo.charAt(0).toUpperCase() + grupo.slice(1)}
+              </h2>
               <div className={styles.grid}>
                 {ps.map((p) => (
                   <PartidoCard
@@ -250,7 +273,7 @@ export default function PartidosPage() {
               </div>
             </section>
           ))}
-          {Object.keys(partidosAgrupados).length === 0 && (
+          {entradasAgrupadas.length === 0 && (
             <p className={styles.noPartidos}>No hay partidos en esta fase aún.</p>
           )}
         </div>

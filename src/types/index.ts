@@ -105,9 +105,9 @@ export interface LeaderboardEntry {
 // CONFIG (Firestore: config/puntos)
 // ─────────────────────────────────────────────
 export interface ConfigPuntos {
-  exacto: number;    // default: 3
-  ganador: number;   // default: 1
-  fallo: number;     // default: 0
+  exacto: number;       // default: 3
+  ganador: number;      // default: 1 (también aplica a ganadorExtra en eliminatorias)
+  fallo: number;        // default: 0
 }
 
 // ─────────────────────────────────────────────

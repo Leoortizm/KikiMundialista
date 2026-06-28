@@ -5,6 +5,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   writeBatch,
   serverTimestamp,
@@ -13,7 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db, COLLECTIONS, SUBCOLLECTIONS } from './firebase';
 import type { LeaderboardEntry, Prediccion, ResultadoPartido, ConfigPuntos } from '../types';
-import { calcularPuntos, DEFAULT_PUNTOS } from '../utils/puntos';
+import { DEFAULT_PUNTOS } from '../utils/puntos';
 
 // ─────────────────────────────────────────────────────────────
 // Helpers
@@ -62,46 +63,61 @@ export function subscribeLeaderboard(
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Actualiza (upsert) el leaderboard de un grupo con los puntos del partido recién finalizado.
- * Para cada predicción del partido:
- *  - Calcula los puntos obtenidos.
- *  - Lee la entry actual del usuario (si existe).
- *  - Acumula puntosTotal, prediccionesExactas, prediccionesGanador y partidosPredichos.
- *  - Escribe en batch.
+ * Recalcula el leaderboard completo de un grupo desde cero,
+ * sumando los puntos de TODAS las predicciones que ya tienen puntosObtenidos.
  *
- * Nota: el nombre/foto se toman del documento `users/{uid}` para que siempre estén actualizados.
+ * Este enfoque es idempotente y correcto tanto en la primera finalización
+ * como en recálculos/correcciones posteriores.
  */
 export async function actualizarLeaderboard(
   grupoId:      string,
-  predicciones: Prediccion[],
-  resultado:    ResultadoPartido,
-  config:       ConfigPuntos = DEFAULT_PUNTOS,
+  _predicciones: Prediccion[],   // ya no se usan para el cálculo — se leen desde Firestore
+  _resultado:    ResultadoPartido,
+  _config:       ConfigPuntos = DEFAULT_PUNTOS,
 ): Promise<void> {
-  if (predicciones.length === 0) return;
+  // 1. Leer TODAS las predicciones del grupo y filtrar localmente las que
+  //    ya tienen puntos asignados (evita requerir índice compuesto en Firestore)
+  const todasQ   = collection(db, COLLECTIONS.GRUPOS, grupoId, SUBCOLLECTIONS.PREDICCIONES);
+  const todasSnap = await getDocs(todasQ);
+  const todasPreds = todasSnap.docs
+    .map((d) => d.data() as Prediccion)
+    .filter((p) => p.puntosObtenidos !== undefined && p.puntosObtenidos !== null);
 
+  if (todasPreds.length === 0) return;
+
+  // 2. Agrupar por uid y acumular estadísticas desde cero
+  const porUid = new Map<string, {
+    puntosTotal: number;
+    prediccionesExactas: number;
+    prediccionesGanador: number;
+    partidosPredichos: number;
+  }>();
+
+  for (const pred of todasPreds) {
+    const pts = pred.puntosObtenidos ?? 0;
+    const esExacto  = pts === DEFAULT_PUNTOS.exacto;
+    const esGanador = pts === DEFAULT_PUNTOS.ganador && !esExacto;
+
+    const acc = porUid.get(pred.uid) ?? {
+      puntosTotal: 0,
+      prediccionesExactas: 0,
+      prediccionesGanador: 0,
+      partidosPredichos: 0,
+    };
+
+    acc.puntosTotal          += pts;
+    acc.prediccionesExactas  += esExacto  ? 1 : 0;
+    acc.prediccionesGanador  += esGanador ? 1 : 0;
+    acc.partidosPredichos    += 1;
+
+    porUid.set(pred.uid, acc);
+  }
+
+  // 3. Para cada uid, leer nombre/foto y escribir la entry en batch
   const batch = writeBatch(db);
 
-  for (const pred of predicciones) {
-    const puntos    = calcularPuntos(pred, resultado, config);
-    const esExacto  = puntos === config.exacto;
-    const esGanador = puntos === config.ganador && !esExacto;
-
-    const puntosAnteriores = pred.puntosObtenidos ?? 0;
-    const esExactoAnterior = puntosAnteriores === config.exacto;
-    const esGanadorAnterior = puntosAnteriores === config.ganador && !esExactoAnterior;
-    const yaTeniaPuntos = pred.puntosObtenidos !== undefined && pred.puntosObtenidos !== null;
-
-    const diffPuntos    = puntos - puntosAnteriores;
-    const diffExactas   = (esExacto ? 1 : 0) - (esExactoAnterior ? 1 : 0);
-    const diffGanadores = (esGanador ? 1 : 0) - (esGanadorAnterior ? 1 : 0);
-    const diffPredichos = yaTeniaPuntos ? 0 : 1;
-
-    // Leer la entry actual
-    const snap        = await getDoc(entryRef(grupoId, pred.uid));
-    const current     = snap.exists() ? (snap.data() as LeaderboardEntry) : null;
-
-    // Leer nombre/foto del usuario
-    const userSnap    = await getDoc(doc(db, COLLECTIONS.USERS, pred.uid));
+  for (const [uid, stats] of porUid.entries()) {
+    const userSnap    = await getDoc(doc(db, COLLECTIONS.USERS, uid));
     const displayName = userSnap.exists()
       ? (userSnap.data().displayName as string) ?? 'Jugador'
       : 'Jugador';
@@ -110,25 +126,24 @@ export async function actualizarLeaderboard(
       : undefined;
 
     const newEntry: LeaderboardEntry = {
-      uid:                  pred.uid,
+      uid,
       displayName,
       photoURL,
-      puntosTotal:          (current?.puntosTotal          ?? 0) + diffPuntos,
-      prediccionesExactas:  (current?.prediccionesExactas  ?? 0) + diffExactas,
-      prediccionesGanador:  (current?.prediccionesGanador  ?? 0) + diffGanadores,
-      partidosPredichos:    (current?.partidosPredichos    ?? 0) + diffPredichos,
-      updatedAt:            serverTimestamp() as LeaderboardEntry['updatedAt'],
+      puntosTotal:         stats.puntosTotal,
+      prediccionesExactas: stats.prediccionesExactas,
+      prediccionesGanador: stats.prediccionesGanador,
+      partidosPredichos:   stats.partidosPredichos,
+      updatedAt:           serverTimestamp() as LeaderboardEntry['updatedAt'],
     };
 
-    batch.set(entryRef(grupoId, pred.uid), newEntry);
+    batch.set(entryRef(grupoId, uid), newEntry);
   }
 
   await batch.commit();
 }
 
 /**
- * Conveniencia: actualiza el leaderboard de TODOS los grupos que participen
- * en un partido (se usa junto con calcularPuntosParaTodosLosGrupos).
+ * Conveniencia: actualiza el leaderboard de TODOS los grupos.
  */
 export async function actualizarLeaderboardParaTodosLosGrupos(
   gruposIds:     string[],

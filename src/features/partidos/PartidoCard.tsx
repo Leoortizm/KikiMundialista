@@ -13,26 +13,39 @@ interface PartidoCardProps {
   grupoId:    string;
   uid:        string;
   prediccion: Prediccion | undefined;
-  onSaved:    (partidoId: string, pred: { golesLocal: number; golesVisitante: number }) => void;
+  onSaved:    (partidoId: string, pred: { golesLocal: number; golesVisitante: number; ganadorExtra?: 'local' | 'visitante' }) => void;
 }
 
 export function PartidoCard({ partido, grupoId, uid, prediccion, onSaved }: PartidoCardProps) {
   const abierto  = aceptaPredicciones(partido.fechaHora) && partido.estado === 'programado';
+  const esElim   = partido.fase !== 'grupos';
 
-  const [gl,       setGl]      = useState(prediccion?.golesLocal      ?? 0);
-  const [gv,       setGv]      = useState(prediccion?.golesVisitante   ?? 0);
-  const [saving,   setSaving]  = useState(false);
-  const [saved,    setSaved]   = useState(false);
-  const [error,    setError]   = useState('');
-  const [countdown,setCd]      = useState(formatCountdown(partido.fechaHora));
+  const [gl,            setGl]           = useState(prediccion?.golesLocal      ?? 0);
+  const [gv,            setGv]           = useState(prediccion?.golesVisitante   ?? 0);
+  const [ganadorExtra,  setGanadorExtra] = useState<'local' | 'visitante' | undefined>(prediccion?.ganadorExtra ?? undefined);
+  const [saving,        setSaving]       = useState(false);
+  const [saved,         setSaved]        = useState(false);
+  const [error,         setError]        = useState('');
+  const [countdown,     setCd]           = useState(formatCountdown(partido.fechaHora));
+
+  // Mostrar selector de ganadorExtra solo en eliminatoria + empate predicho
+  const showGanadorExtra = esElim && gl === gv;
 
   // Sincroniza si llega predicción externa
   useEffect(() => {
     if (prediccion) {
       setGl(prediccion.golesLocal);
       setGv(prediccion.golesVisitante);
+      setGanadorExtra(prediccion.ganadorExtra ?? undefined);
     }
   }, [prediccion]);
+
+  // Si el usuario cambia el marcador y ya no es empate, limpiar ganadorExtra
+  useEffect(() => {
+    if (gl !== gv) {
+      setGanadorExtra(undefined);
+    }
+  }, [gl, gv]);
 
   // Countdown en tiempo real
   useEffect(() => {
@@ -44,9 +57,17 @@ export function PartidoCard({ partido, grupoId, uid, prediccion, onSaved }: Part
     setError('');
     setSaving(true);
     try {
-      await savePrediccion(grupoId, uid, partido.id, { golesLocal: gl, golesVisitante: gv });
+      await savePrediccion(grupoId, uid, partido.id, {
+        golesLocal: gl,
+        golesVisitante: gv,
+        ganadorExtra: showGanadorExtra ? ganadorExtra : undefined,
+      });
       setSaved(true);
-      onSaved(partido.id, { golesLocal: gl, golesVisitante: gv });
+      onSaved(partido.id, {
+        golesLocal: gl,
+        golesVisitante: gv,
+        ganadorExtra: showGanadorExtra ? ganadorExtra : undefined,
+      });
       setTimeout(() => setSaved(false), 2500);
     } catch {
       setError('No se pudo guardar. Inténtalo de nuevo.');
@@ -88,6 +109,9 @@ export function PartidoCard({ partido, grupoId, uid, prediccion, onSaved }: Part
         </span>
         {partido.grupoFase && (
           <span className={styles.grupo}>Grupo {partido.grupoFase}</span>
+        )}
+        {!partido.grupoFase && esElim && (
+          <span className={styles.grupo}>{partido.fase.replace('_', ' ')}</span>
         )}
       </div>
 
@@ -162,16 +186,59 @@ export function PartidoCard({ partido, grupoId, uid, prediccion, onSaved }: Part
         </div>
       </div>
 
+      {/* Selector de Ganador Extra (eliminatorias + empate predicho + abierto) */}
+      {abierto && showGanadorExtra && (
+        <div className={styles.ganadorExtraSection}>
+          <p className={styles.ganadorExtraLabel}>
+            ⚽ Si hay empate, ¿quién avanza?
+          </p>
+          <div className={styles.ganadorExtraBtns}>
+            <button
+              className={`${styles.ganadorExtraBtn} ${ganadorExtra === 'local' ? styles.ganadorExtraActive : ''}`}
+              onClick={() => { setGanadorExtra('local'); setSaved(false); }}
+              type="button"
+            >
+              {getFlagUrl(partido.codigoLocal) && (
+                <img src={getFlagUrl(partido.codigoLocal)!} alt="" className={styles.ganadorExtraFlag} />
+              )}
+              {partido.codigoLocal}
+            </button>
+            <button
+              className={`${styles.ganadorExtraBtn} ${ganadorExtra === 'visitante' ? styles.ganadorExtraActive : ''}`}
+              onClick={() => { setGanadorExtra('visitante'); setSaved(false); }}
+              type="button"
+            >
+              {getFlagUrl(partido.codigoVisitante) && (
+                <img src={getFlagUrl(partido.codigoVisitante)!} alt="" className={styles.ganadorExtraFlag} />
+              )}
+              {partido.codigoVisitante}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Ganador Extra locked (eliminatoria, cerrado, hay predicción con ganadorExtra) */}
+      {!abierto && esElim && prediccion?.ganadorExtra && (
+        <div className={styles.ganadorExtraLocked}>
+          🏆 Avanza: <strong>{prediccion.ganadorExtra === 'local' ? partido.codigoLocal : partido.codigoVisitante}</strong>
+        </div>
+      )}
+
       {/* Footer */}
       <div className={styles.footer}>
         <span className={styles.fecha}>{formatFechaPartido(partido.fechaHora)}</span>
         <span className={styles.estadio}>🏟 {partido.estadio}</span>
       </div>
 
-      {/* Mi predicción label (cuando está cerrado y hay pred) */}
+      {/* Mi predicción label (cuando está finalizado y hay pred) */}
       {partido.estado === 'finalizado' && prediccion && (
         <div className={styles.myPred}>
-          <span>Tu predicción: {prediccion.golesLocal} — {prediccion.golesVisitante}</span>
+          <span>
+            Tu predicción: {prediccion.golesLocal} — {prediccion.golesVisitante}
+            {prediccion.ganadorExtra && (
+              <> (Avanza: {prediccion.ganadorExtra === 'local' ? partido.codigoLocal : partido.codigoVisitante})</>
+            )}
+          </span>
           {ptsBadge && <span className={`${styles.ptsBadge} ${ptsBadge.cls}`}>{ptsBadge.label}</span>}
         </div>
       )}

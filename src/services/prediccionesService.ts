@@ -107,14 +107,18 @@ export async function calcularPuntosParaTodosLosGrupos(
     const predicciones = await getPrediccionesByPartido(grupoId, partidoId);
     if (predicciones.length === 0) continue;
 
-    prediccionesPorGrupo.set(grupoId, predicciones);
-
     const batch = writeBatch(db);
+    const prediccionesActualizadas: Prediccion[] = [];
+
     for (const pred of predicciones) {
       const puntos = calcularPuntos(pred, resultado, config);
       batch.update(predRef(grupoId, pred.id), { puntosObtenidos: puntos });
+      // Actualizar el objeto en memoria también para que el caller tenga el valor correcto
+      prediccionesActualizadas.push({ ...pred, puntosObtenidos: puntos });
     }
+
     await batch.commit();
+    prediccionesPorGrupo.set(grupoId, prediccionesActualizadas);
   }
 
   return prediccionesPorGrupo;

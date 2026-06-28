@@ -9,7 +9,24 @@ export const DEFAULT_PUNTOS: ConfigPuntos = {
 
 /**
  * Calcula los puntos obtenidos para una predicción dado el resultado real.
- * Soporta fase de grupos (puede haber empate) y eliminatorias (ganador obligatorio).
+ *
+ * Sistema de puntos (máximo 3 pts por partido):
+ *
+ *  FASE DE GRUPOS:
+ *   - Marcador exacto:                                      3 pts
+ *   - Acertar ganador o empate (sin marcador exacto):        1 pt
+ *   - Fallo:                                                 0 pts
+ *
+ *  ELIMINATORIAS (ganador claro en 90 min):
+ *   - Marcador exacto:                                      3 pts
+ *   - Acertar ganador (sin marcador exacto):                 1 pt
+ *   - Fallo:                                                 0 pts
+ *
+ *  ELIMINATORIAS (empate en 90 min → penales/alargue):
+ *   - Marcador exacto + ganadorExtra correcto:               3 pts
+ *   - Marcador exacto + ganadorExtra incorrecto/ausente:     1 pt
+ *   - Marcador incorrecto + ganadorExtra correcto:           1 pt
+ *   - Fallo total:                                           0 pts
  */
 export function calcularPuntos(
   prediccion: Pick<Prediccion, 'golesLocal' | 'golesVisitante' | 'ganadorExtra'>,
@@ -20,33 +37,42 @@ export function calcularPuntos(
   const pV = Number(prediccion.golesVisitante);
   const rL = Number(resultado.golesLocal);
   const rV = Number(resultado.golesVisitante);
-  const ganadorReal = resultado.ganador;
 
-  // Resultado exacto (marcador completo)
+  // Determinar el ganador efectivo del partido
+  const ganadorEfectivo = resultado.ganador ?? (rL > rV ? 'local' : rV > rL ? 'visitante' : 'empate');
+
+  // ¿Fue a penales/alargue? (empate en 90 min pero con un ganador definido)
+  const fueAPenales = rL === rV && ganadorEfectivo !== 'empate';
+
+  // ── Resultado exacto (marcador completo) ──
   if (pL === rL && pV === rV) {
+    if (fueAPenales) {
+      // Eliminatoria con empate: 3 pts SOLO si también acertó quién avanza
+      if (prediccion.ganadorExtra && prediccion.ganadorExtra === ganadorEfectivo) {
+        return config.exacto;   // 3 pts — predicción perfecta
+      }
+      // Acertó marcador pero no quién avanza → solo 1 pt (como acertar empate)
+      return config.ganador;    // 1 pt
+    }
+    // Grupos o eliminatoria con ganador claro: marcador exacto = 3 pts
     return config.exacto;
   }
 
-  // Ganador correcto
+  // ── No acertó el marcador exacto ──
+
   const ganadorPrediccion = pL > pV ? 'local' : pV > pL ? 'visitante' : 'empate';
 
-  if (ganadorReal) {
-    // Eliminatoria: solo local o visitante
-    if (ganadorReal !== 'empate' && ganadorPrediccion === ganadorReal) {
-      return config.ganador;
-    }
-    // Eliminatoria con definición por penales: verificar ganadorExtra
-    if (
-      prediccion.ganadorExtra &&
-      prediccion.ganadorExtra === ganadorReal
-    ) {
-      return config.ganador;
-    }
-  } else {
-    // Fase de grupos: empate también es ganador válido
-    if (ganadorPrediccion === ganadorReal) {
-      return config.ganador;
-    }
+  // Acertar ganador o empate → 1 pt
+  if (ganadorPrediccion === ganadorEfectivo) {
+    return config.ganador;
+  }
+
+  // Eliminatoria: predijo empate + ganadorExtra correcto → 1 pt
+  if (
+    prediccion.ganadorExtra &&
+    prediccion.ganadorExtra === ganadorEfectivo
+  ) {
+    return config.ganador;
   }
 
   return config.fallo;
