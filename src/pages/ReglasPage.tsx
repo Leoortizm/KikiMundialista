@@ -93,8 +93,18 @@ export default function ReglasPage() {
         <h2 className={styles.sectionTitle}><AlertTriangle size={18} /> Fase de Eliminatorias (Playoffs y Ganador Extra)</h2>
         <div className={styles.elimInfo}>
           <p className={styles.elimText}>
-            A partir de dieciseisavos de final, los partidos no pueden terminar en empate en la vida real. Si al término de los 90/120 minutos el marcador está empatado, el clasificado se define mediante penales. En estas fases aplica el selector de <strong>Ganador Extra</strong>.
+            En playoffs, los partidos no pueden quedar en tablas. Tu marcador pronosticado aplica para todo el tiempo de juego antes de penales (<strong>90 minutos + prórroga de 120 minutos si la hay</strong>). Solo si tras los 120 minutos el marcador sigue igualado y van a <strong>tanda de penales</strong>, aplica tu elección de <strong>Ganador Extra</strong>.
           </p>
+
+          <div className={styles.infoBox} style={{ marginBlock: 'var(--space-4)', padding: 'var(--space-4)', background: 'var(--bg-surface-2)', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--color-primary)' }}>
+            <h4 style={{ margin: 0, marginBottom: 'var(--space-2)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+              📌 Clarificación importante sobre prórrogas y penales:
+            </h4>
+            <ul style={{ margin: 0, paddingLeft: 'var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+              <li><strong>Marcador pronosticado:</strong> Incluye los 90 minutos reglamentarios MÁS el tiempo extra (120 min). Si queda 1-1 en los 90 min y en el alargue termina 2-1, el marcador real del partido es 2-1.</li>
+              <li><strong>Tanda de penales (Ganador Extra):</strong> Se activa únicamente cuando tras los 120 minutos el marcador sigue en empate. Ahí se evalúa quién avanzó en la tanda de penales frente a tu selección de Ganador Extra.</li>
+            </ul>
+          </div>
 
           <div className={styles.tableWrap} style={{ marginTop: 'var(--space-4)' }}>
             <table className={styles.table}>
@@ -107,7 +117,7 @@ export default function ReglasPage() {
               </thead>
               <tbody>
                 <tr className={styles.rowExacto}>
-                  <td><strong>Marcador exacto con ganador claro en 90 min</strong></td>
+                  <td><strong>Marcador exacto con ganador claro en 90/120 min</strong></td>
                   <td>Predije 3-1 | Resultado 3-1</td>
                   <td className={styles.puntosCell}><strong>3 pts</strong></td>
                 </tr>
@@ -147,6 +157,10 @@ export default function ReglasPage() {
         <h2 className={styles.sectionTitle}><HelpCircle size={18} /> Preguntas Frecuentes</h2>
         <div className={styles.faqList}>
           <div className={styles.faqItem}>
+            <h4 className={styles.faqQuestion}>En los partidos de eliminatorias, ¿mi marcador cuenta para 90 o 120 minutos?</h4>
+            <p className={styles.faqAnswer}>El marcador que pronosticas aplica para todo el tiempo de juego disputado antes de los tiros penales. Esto incluye los 90 minutos reglamentarios más el alargue/prórroga de 30 minutos si lo hubiere (120 minutos en total).</p>
+          </div>
+          <div className={styles.faqItem}>
             <h4 className={styles.faqQuestion}>¿Puedo cambiar mi predicción después de guardarla?</h4>
             <p className={styles.faqAnswer}>Sí, puedes modificar tu pronóstico las veces que quieras en la sección de Partidos, siempre y cuando el partido no haya comenzado (el contador del partido debe estar activo).</p>
           </div>
@@ -156,7 +170,7 @@ export default function ReglasPage() {
           </div>
           <div className={styles.faqItem}>
             <h4 className={styles.faqQuestion}>¿Los puntos y las predicciones son independientes por grupo?</h4>
-            <p className={styles.faqAnswer}>Sí, son 100% independientes. Puedes ingresar pronósticos diferentes para el mismo partido en cada uno de tus grupos (por ejemplo, arriesgar un resultado en un grupo y ser más conservador en otro). En consecuencia, tu puntuación y tu posición en la tabla de clasificación se calculan de forma aislada dentro de cada grupo.</p>
+            <p className={styles.faqAnswer}>Sí, son 100% independientes. Puedes ingresar pronósticos diferentes para el mismo partido en cada uno de tus grupos. Tu puntuación y tu posición en la tabla de clasificación se calculan de forma aislada dentro de cada grupo.</p>
           </div>
         </div>
       </section>
